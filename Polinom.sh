@@ -1,0 +1,1 @@
+g++ Polinom.cpp -c
