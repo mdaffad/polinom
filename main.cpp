@@ -24,7 +24,7 @@ int main()
 
     // a = a.bruteforce(b);
     // a.Print();
-    Polinom * result = a.karatsubaMultiplication(b);
+    Polinom * result = a.multiplicationDivideandConquer(b);
     result->Print();
     
     return 0;

@@ -93,113 +93,125 @@ Polinom Polinom::bruteforce(const Polinom& polinom)
     
     return result;
 }
-Polinom * Polinom::karatsubaMultiplication(const Polinom & rPolynom)  
+Polinom * Polinom::multiplicationDivideandConquer(const Polinom & polinom)  
 {
-
-    if (this->getDegree() != rPolynom.getDegree()) {
+    // fail if the degree not equal
+    if (this->getDegree() != polinom.getDegree()) 
+    {
         return nullptr;
     }
 
-    int realSize = degreePowerOfTwo(this->getRealSize());
+    int realSize = setDegreeForm(this->getRealSize());
 
-    int * left;
-    int * right;
+    int * operand1;
+    int * operand2;
     int * result;
-    if (realSize != this->getRealSize()) {
-        left = fillElement(this->element, realSize);
-        right = fillElement(rPolynom.element, realSize);
+    if (realSize != this->getRealSize()) 
+    {
+        operand1 = fillElement(this->element, realSize);
+        operand2 = fillElement(polinom.element, realSize);
+        result = divideandconquer(operand1, operand2, realSize);
 
-
-        result = divideandconquer(left, right, realSize);
+        //destruct
+        delete [] operand1;
+        delete [] operand2;
+    } 
+    else 
+    {
  
-
-        delete [] left;
-        delete [] right;
-    } else {
- 
-        result = divideandconquer(this->element, rPolynom.element, this->getRealSize());
+        result = divideandconquer(this->element, polinom.element, this->getRealSize());
   
     }
-
-
     return new Polinom(result, realSize);
 }
-int * Polinom::fillElement(int * constants, int size) {
+int * Polinom::fillElement(int * element, int size) 
+{
+    int DegreeForm = setDegreeForm(size-1);
+    // The divide and conquer use the half size degree hence we need setting up the degree in multiples of poewer 2
+    int * newElement;
 
-    int rightDegree = degreePowerOfTwo(size-1);
-    int * newConstants;
+    if(DegreeForm != size) 
+    {
+        newElement = new int[DegreeForm];
 
-    if(rightDegree != size) {
-        newConstants = new int[rightDegree];
-
-        for(int i = 0; i < rightDegree; i++) {
-            if(i < size) {
-                newConstants[i] = constants[i];
-            } else {
-                newConstants[i] = 0;
+        for(int i = 0; i < DegreeForm; i++) 
+        {
+            if(i < size) 
+            {
+                newElement[i] = element[i];
+            } 
+            else 
+            {
+                newElement[i] = 0;
             }
         }
-    } else {
-        newConstants = constants;
+    } 
+    else // if it has the form of power 2 
+    {
+        newElement = element;
     }
 
-    return newConstants;
+    return newElement;
 }
-int Polinom::degreePowerOfTwo(int degree) const {
+int Polinom::setDegreeForm(int degree) const 
+{
     int power = 1;
 
-    while(power < degree) {
+    while(power < degree) 
+    {
         power *= 2;
     }
     return power;
 }
 
 
-int * Polinom::divideandconquer(int * left, int * right, int size)  {
+int * Polinom::divideandconquer(int * operand1, int * operand2, int size)  
+{
 
     int resultSize = size * 2 + 1;
 
     int * result = new int[resultSize];
-    for (int i = 0; i < resultSize; i++) {
+    for (int i = 0; i < resultSize; i++) 
+    {
         result[i] = 0;
     }
 
-    if (size == 1) {
-        result[0] = left[0] * right[0];
+    if (size == 1) 
+    {
+        result[0] = operand1[0] * operand2[0];
         return result;
     }
 
-    int halfSize = size/2;
+    int currentSize = size/2;
 
-    int * leftLowP = left;
-    int * rightLowP = right;
-    int * leftHighP = &left[halfSize];
-    int * rightHighP = &right[halfSize];
+    int * operand1LowP = operand1;
+    int * operand2LowP = operand2;
+    int * operand1HighP = &operand1[currentSize];
+    int * operand2HighP = &operand2[currentSize];
 
-    int * p0 = divideandconquer(leftLowP, rightLowP, halfSize);
-    //memory leak for sumPolynomial
-    int * p1 = divideandconquer(sumPolynomial(leftLowP, leftHighP, halfSize), sumPolynomial(rightLowP, rightHighP, halfSize), halfSize);
-    int * p2 = divideandconquer(leftHighP, rightHighP, halfSize);
+    // Use the same variable name in if2211 Strategi Algoritma : Algoritma Divide and Conquer (revisi 2020) p.134
+    int * Y = divideandconquer(sumElement(operand1LowP, operand1HighP, currentSize), sumElement(operand2LowP, operand2HighP, currentSize), currentSize);
+    int * U = divideandconquer(operand1LowP, operand2LowP, currentSize);
+    // 
+    int * Z = divideandconquer(operand1HighP, operand2HighP, currentSize);
 
-    for(int i = 0; i < size; i++) {
-        result[i] += p0[i];
-        result[i + size] += p2[i];
-        result[i + halfSize] += p1[i] - p2[i] - p0[i];
+    for(int i = 0; i < size; i++) 
+    {
+        result[i] += U[i];
+        result[i + size] += Z[i];
+
+        result[i + currentSize] += Y[i] - U[i] - Z[i];
     }
-
-    delete [] p0;
-    delete [] p1;
-    delete [] p2;
-
     return result;
 
 }
-int * Polinom::sumPolynomial(int * left, int * right, int size)  
+int * Polinom::sumElement(int * operand1, int * operand2, int size)  
 {
 
     int * result = new int[size];
-    for (int i = 0; i < size; i++) {
-        result[i] = left[i] + right[i];
+    for (int i = 0; i < size; i++) 
+    {
+        result[i] = operand1[i] + operand2[i];
     }
 
     return result;
