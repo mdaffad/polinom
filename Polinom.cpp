@@ -1,5 +1,6 @@
 #include "Polinom.h"
 #include <iostream>
+#include <cstring>
 using namespace std;
 
 Polinom::Polinom(int degree)
@@ -77,6 +78,8 @@ Polinom Polinom::bruteforce(const Polinom& polinom)
             for (int j = 0; j <= this->getDegree(); j++)
             {
                 result.setElement(result.getElement(i+j) + polinom.getElement(i) * this-> getElement(j), i+j);
+                totalSum++;
+                totalMultiplication++;
             }
         }
     }
@@ -87,6 +90,8 @@ Polinom Polinom::bruteforce(const Polinom& polinom)
             for (int j = 0; j <= polinom.getDegree(); j++)
             {
                 result.setElement(result.getElement(i+j) + this-> getElement(i) * polinom.getElement(j), i+j);
+                totalSum++;
+                totalMultiplication++;
             }
         }
     }
@@ -94,13 +99,13 @@ Polinom Polinom::bruteforce(const Polinom& polinom)
     return result;
 }
 Polinom * Polinom::multiplicationDivideandConquer(const Polinom & polinom)  
+// Base control in multiplication divide and conquer
+// step
+// 1. Normalize the form to power of 2 form size
+// 2. Run divide and conquer polinom multiplication
+// I.S the polinoms have same degree
+// F.S result of two polinom multiplication in power of 2 form
 {
-    // fail if the degree not equal
-    if (this->getDegree() != polinom.getDegree()) 
-    {
-        return nullptr;
-    }
-
     int realSize = setDegreeForm(this->getRealSize());
 
     int * operand1;
@@ -167,9 +172,10 @@ int Polinom::setDegreeForm(int degree) const
 
 int * Polinom::divideandconquer(int * operand1, int * operand2, int size)  
 {
-
-    int resultSize = size * 2 + 1;
-
+    // for notes :
+    // degree = size * 2
+    // realSize = size * 2 + 1
+    int resultSize = size + 1;
     int * result = new int[resultSize];
     for (int i = 0; i < resultSize; i++) 
     {
@@ -191,10 +197,11 @@ int * Polinom::divideandconquer(int * operand1, int * operand2, int size)
 
     // Use the same variable name in if2211 Strategi Algoritma : Algoritma Divide and Conquer (revisi 2020) p.134
     int * Y = divideandconquer(sumElement(operand1LowP, operand1HighP, currentSize), sumElement(operand2LowP, operand2HighP, currentSize), currentSize);
+    totalMultiplicationDnC++;
     int * U = divideandconquer(operand1LowP, operand2LowP, currentSize);
-    // 
+    totalMultiplicationDnC++;
     int * Z = divideandconquer(operand1HighP, operand2HighP, currentSize);
-
+    totalMultiplicationDnC++;
     for(int i = 0; i < size; i++) 
     {
         result[i] += U[i];
@@ -212,14 +219,16 @@ int * Polinom::sumElement(int * operand1, int * operand2, int size)
     for (int i = 0; i < size; i++) 
     {
         result[i] = operand1[i] + operand2[i];
+        totalSumDnC++;
     }
 
     return result;
 }
 void Polinom::Print()
 {
-    for(int i = 0; i <= getDegree(); i++)
+    for (int i = 0; i <= getDegree(); i++) 
     {
-        cout<<element[i]<< " " << i <<endl;
+        cout << element[i] << "x^"<< i << (i == getDegree() ? " " : " + ");
     }
+    cout << endl;
 }

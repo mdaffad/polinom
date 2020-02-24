@@ -27,6 +27,10 @@ class Polinom
         float * fillElement(float * constants, int size);
         int setDegreeForm(int degree) const;
         int * fillElement(int * constants, int size);
+        static int totalSum;
+        static int totalMultiplication;
+        static int totalSumDnC;
+        static int totalMultiplicationDnC;
 
     private:
         int degree;
